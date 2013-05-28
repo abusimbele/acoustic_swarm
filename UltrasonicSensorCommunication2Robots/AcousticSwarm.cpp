@@ -1,6 +1,7 @@
 // Do not remove the include below
 #include "AcousticSwarm.h"
 #include "Wire.h"
+//#include "pt.h"
 
 
 
@@ -14,16 +15,16 @@ int reading=0;
 int controllerReadout=-1;
 int counter=0;
 
+
+
+
 void setup() {
   Wire.begin();
   Serial.begin(19200);
   delay(1000);
 
-
-
-
-
 }
+
 
 void loop() {
 
@@ -61,8 +62,8 @@ void loop() {
 		  Wire.write(byte(0x00)); // Register 0 -> control register
 		  Wire.write(byte(0x5C)); // Erzeugt einen 8 zyklischen 40khz Impuls/Ton
 		  Wire.endTransmission();
-		  delay(2);
 	  }
+	  delay(2);
 
 
 
