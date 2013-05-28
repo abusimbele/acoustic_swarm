@@ -1,6 +1,7 @@
 // Do not remove the include below
 #include "AcousticSwarm.h"
 #include "Wire.h"
+#include "Message.h"
 //#include "pt.h"
 
 
@@ -14,20 +15,59 @@ const int ULTRA_RECEIV_ADDRESS   =  113;
 int reading=0;
 int controllerReadout=-1;
 int counter=0;
+int msg1_bits[]={1,1,1,1,1,1};
+Message *msg;
+int msg_bit=0;
 
 
 
 
-void setup() {
-  Wire.begin();
-  Serial.begin(19200);
-  delay(1000);
+Message send_bit_sequence(int bits_to_send[]){
+	Message msg(bits_to_send);
+	return msg;
+
+
+}
+
+void activate_receiving_mode(){
+
+	/*
+		   *Activate receiver to listen to the channel
+		   */
+
+		  Wire.beginTransmission(113);
+		  Wire.write(byte(0x00)); // Register 0 -> control register
+		  Wire.write(byte(0x58)); // look
+		  Wire.endTransmission();
+		  delay(2);
+}
+
+
+void send_bit_0(){
+	//do nothing
+}
+
+void send_bit_1(){
+
+	  /*
+	   *	Send 8 Impulses
+	   */
+
+
+	  Serial.println("PING");
+	  delay(5);
+	  Wire.beginTransmission(112);
+	  Wire.write(byte(0x00)); // Register 0 -> control register
+	  Wire.write(byte(0x5C)); // Erzeugt einen 8 zyklischen 40khz Impuls/Ton
+	  Wire.endTransmission();
+
+	  delay(2);
+
 
 }
 
 
-void loop() {
-
+void read_firmware(){
 	  Wire.beginTransmission(113);
 	  Wire.write(byte(0x00)); // Register 0 -> control register
 	  Wire.endTransmission();
@@ -38,50 +78,9 @@ void loop() {
 	  Serial.print("ControllerReadoutFirmware0: ");
 	  Serial.println(controllerReadout);
 	  controllerReadout=-1;
+}
 
-
-
-	  /*
-	   *Activate receiver to listen to the channel
-	   */
-
-	  Wire.beginTransmission(113);
-	  Wire.write(byte(0x00)); // Register 0 -> control register
-	  Wire.write(byte(0x58)); // look
-	  Wire.endTransmission();
-	  delay(2);
-
-	  /*
-	   *	Send 8 Impulses
-	   */
-
-	  if((counter%2)==0){
-		  Serial.println("PING");
-		  delay(5);
-		  Wire.beginTransmission(112);
-		  Wire.write(byte(0x00)); // Register 0 -> control register
-		  Wire.write(byte(0x5C)); // Erzeugt einen 8 zyklischen 40khz Impuls/Ton
-		  Wire.endTransmission();
-	  }
-	  delay(2);
-
-
-
-	  Wire.beginTransmission(113);
-	  Wire.write(byte(0x00)); // Register 0 -> control register
-	  Wire.endTransmission();
-	  delay(2);
-
-	  Wire.requestFrom(113,1);
-	  controllerReadout=Wire.read();
-	  Serial.print("ControllerReadoutFirmware1: ");
-	  Serial.println(controllerReadout);
-	  controllerReadout=-1;
-
-
-
-
-
+void receive_bit(){
 	  /*
 	   *	Received Impulses
 	   */
@@ -135,6 +134,46 @@ void loop() {
 	  }
 
 	  Serial.println("*************");
-	  //delay(2000);
-	  counter=counter+1;
+}
+
+
+
+
+
+void setup() {
+  (*msg)= send_bit_sequence(msg1_bits);
+  Wire.begin();
+  Serial.begin(19200);
+  delay(1000);
+  Serial.print("Msg: ");
+  Serial.print((*msg).get_bitvalues()[0]);
+  Serial.print((*msg).get_bitvalues()[1]);
+  Serial.print((*msg).get_bitvalues()[2]);
+  Serial.print((*msg).get_bitvalues()[3]);
+  Serial.print((*msg).get_bitvalues()[4]);
+  Serial.println((*msg).get_bitvalues()[5]);
+  delay(2000);
+
+}
+
+
+
+void loop() {
+	msg_bit=(*msg).nextBit();
+	Serial.print("**p**");
+	Serial.println(msg_bit);
+	if(msg_bit==1){
+		send_bit_1();
+	}
+	if(msg_bit==0){
+			send_bit_0();
+		}
+
+
+
+	controllerReadout=-1;
+	activate_receiving_mode();
+	receive_bit();
+	//delay(1000);
+	counter=counter+1;
 }
