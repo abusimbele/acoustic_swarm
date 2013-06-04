@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>UltrasonicSensorCommunication2Robots</name>
+	<name>UltrasonicSensorCommunication2RobotsReceiver</name>
 	<comment></comment>
 	<projects>
 		<project>Arduino_Uno</project>

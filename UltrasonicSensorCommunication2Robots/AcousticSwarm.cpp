@@ -15,7 +15,7 @@ const int ULTRA_RECEIV_ADDRESS   =  113;
 int reading=0;
 int controllerReadout=-1;
 int counter=0;
-int msg1_bits[]={1,1,1,1,1,1};
+int msg1_bits[]={0,1,1,0,0,1};
 Message *msg;
 int msg_bit=0;
 
