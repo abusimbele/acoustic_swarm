@@ -38,6 +38,11 @@
 			<locationURI>ArduinoLibPath/Wire</locationURI>
 		</link>
 		<link>
+			<name>arduino</name>
+			<type>2</type>
+			<locationURI>UltrasonicSensorCommunication2RobotsReceiverarduino/arduino</locationURI>
+		</link>
+		<link>
 			<name>mthread</name>
 			<type>2</type>
 			<location>C:/Users/Work/git/jlamothe/mthread</location>

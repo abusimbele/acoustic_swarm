@@ -52,6 +52,7 @@ int* Message::get_bitvalues(){
 	}
 	else{
 		pointer_message_read=0;
+		return bits[MSG_LENGTH-1];
 
 	}
 	return result;
