@@ -28,11 +28,6 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>Firmata</name>
-			<type>2</type>
-			<locationURI>ArduinoLibPath/Firmata</locationURI>
-		</link>
-		<link>
 			<name>Wire</name>
 			<type>2</type>
 			<locationURI>ArduinoLibPath/Wire</locationURI>
@@ -41,21 +36,6 @@
 			<name>arduino</name>
 			<type>2</type>
 			<locationURI>UltrasonicSensorCommunication2RobotsReceiverarduino/arduino</locationURI>
-		</link>
-		<link>
-			<name>mthread</name>
-			<type>2</type>
-			<location>C:/Users/Work/git/jlamothe/mthread</location>
-		</link>
-		<link>
-			<name>newdel</name>
-			<type>2</type>
-			<location>C:/Users/Work/git/newdel</location>
-		</link>
-		<link>
-			<name>pt-1.4</name>
-			<type>2</type>
-			<locationURI>PivateLibPath/pt-1.4</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
