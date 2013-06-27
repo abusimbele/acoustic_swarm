@@ -15,6 +15,7 @@
 
 const int ULTRA_TRANS_ADDRESS    =  112;
 const int ULTRA_RECEIV_ADDRESS   =  113;
+const int MAX_MEASURE_TIME=15000;
 unsigned int reading=0;
 int controllerReadout=-1;
 int counter=0;
@@ -24,7 +25,10 @@ int msg_bit=0;
 const int TIMEOUT=0; //too much 15752;//old 11000
 const int TIMEOUT_2=20000;
 boolean flag=false;
-const int WAITING_TIME=65; //65
+const int WAITING_TIME=1000; //65
+boolean bit_flag=false;
+unsigned long start_time=0.0;
+unsigned long end_time=0.0;
 
 
 
@@ -47,7 +51,7 @@ void activate_receiving_mode(){
 		  Wire.write(byte(0x00)); // Register 0 -> control register
 		  Wire.write(byte(0x58)); // look
 		  Wire.endTransmission();
-		  delay(2);
+		  //delay(2);
 }
 
 
@@ -72,6 +76,7 @@ bool start_synchronize(){
 		  controllerReadout=Wire.read();
 		  Serial.print("ControllerReadoutFirmware_0: ");
 		  Serial.println(controllerReadout);
+		  delay(1);
 
 
 		}
@@ -86,13 +91,13 @@ bool start_synchronize(){
 		  reading =(reading * 256) + Wire.read();
 //	  	  reading = reading << 8;    // shift high byte to be high 8 bits
 //	  	  reading |= Wire.read();
-	  	  Serial.print("Seconds: ");
-	  	  Serial.println(reading);
+//	  	  Serial.print("Seconds: ");
+//	  	  Serial.println(reading);
 	  	  delay(2);
 
 
 	  	  Serial.print("DATA-BIT: ");
-	  	  if(reading!=TIMEOUT and reading<10000){
+	  	  if(reading!=TIMEOUT){
 	  		 Serial.println("First 1 arrived!");
 	  		 return true;
 	  	  }
@@ -134,8 +139,8 @@ void read_firmware(){
 
 	  Wire.requestFrom(113,1);
 	  controllerReadout=Wire.read();
-	  Serial.print("ControllerReadoutFirmware0: ");
-	  Serial.println(controllerReadout);
+//	  Serial.print("ControllerReadoutFirmware0: ");
+//	  Serial.println(controllerReadout);
 	  controllerReadout=-1;
 }
 
@@ -149,71 +154,78 @@ void receive_bit(){
 	  /*
 	   *	Received Impulses
 	   */
+	start_time=millis();
+
+		  while(true){
+
+			  controllerReadout=-1;
+			  activate_receiving_mode();
 
 
-		  controllerReadout=-1;
-		  activate_receiving_mode();
-		  delay(WAITING_TIME);
+			  Wire.beginTransmission(113);
+			  Wire.write(byte(0x00)); // Register 0 -> control register
+			  Wire.endTransmission();
 
-//		  Wire.beginTransmission(113);
-//		  Wire.write(byte(0x00)); // Register 0 -> control register
-//		  Wire.endTransmission();
-//
-//
-//
-//		  while(controllerReadout==-1)
-//			{
-//
-//
-//			  Wire.requestFrom(113,1);
-//			  controllerReadout=Wire.read();
-//			  Serial.print("ControllerReadoutFirmware: ");
-//			  Serial.println(controllerReadout);
-//
-//			}
+
+
+			  while(controllerReadout==-1)
+				{
+
+				  delay(1);
+				  Wire.requestFrom(113,1);
+				  controllerReadout=Wire.read();
+//				  Serial.print("ControllerReadoutFirmware: ");
+//				  Serial.println(controllerReadout);
+
+				}
+
+
+
+			  /*
+			   *  Pointer to Register 0x02
+			   */
+
+			  Wire.beginTransmission(113); // transmit to device #112
+			  Wire.write(byte(0x02));      // sets register pointer to echo #1 register (0x02)
+			  Wire.endTransmission();      // stop transmitting
+			  delay(2);
 
 
 		  /*
-		   *  Pointer to Register 0x02
+		   * Read values
 		   */
 
-		  Wire.beginTransmission(113); // transmit to device #112
-		  Wire.write(byte(0x02));      // sets register pointer to echo #1 register (0x02)
-		  Wire.endTransmission();      // stop transmitting
+		  Wire.requestFrom(113,2);
+		  reading=Wire.read();
+
+	//	  reading = reading << 8;    // shift high byte to be high 8 bits
+	//	  reading |= Wire.read();
+		  reading =(reading * 256) + Wire.read();
+		  Serial.print("Seconds: ");
+		  Serial.println(reading);
 		  delay(2);
+		  if(reading!=TIMEOUT and reading<MAX_MEASURE_TIME){
+			  bit_flag=true;
+		  }
+		  if((millis()-start_time)>=965.0){
+			  break;
+		  }
 
-
-	  /*
-	   * Read values
-	   */
-
-	  Wire.requestFrom(113,2);
-	  reading=Wire.read();
-
-//	  reading = reading << 8;    // shift high byte to be high 8 bits
-//	  reading |= Wire.read();
-	  reading =(reading * 256) + Wire.read();
-	  Serial.print("Seconds: ");
-	  Serial.println(reading);
-	  delay(2);
+		  }
 
 
 	  Serial.print("DATA-BIT: ");
-	  if(reading==TIMEOUT)
+	  if(!bit_flag)
 	  	  {
 		  Serial.println("0");
 
 	  	  }
-	  if (reading>TIMEOUT_2)
-	  {
-		  Serial.println("01");
-
-  	  }
-	  if (reading<=TIMEOUT_2 and reading != TIMEOUT) {
+	  else{
 		  Serial.println("1");
 	  }
 
 	  Serial.println("*************");
+	  bit_flag=false;
 
 }
 //void test(){Serial.println("muh!");}
@@ -240,6 +252,7 @@ void setup() {
 
   while(!start_synchronize()){}
   //FrequencyTimer2::setOnOverflow(test);
+  delay(500);
 
 
 
