@@ -15,7 +15,11 @@
 
 const int ULTRA_TRANS_ADDRESS    =  112;
 const int ULTRA_RECEIV_ADDRESS   =  113;
+<<<<<<< HEAD
 const int MAX_MEASURE_TIME=1000000; //15000
+=======
+const int MAX_MEASURE_TIME=15000;
+>>>>>>> branch 'master' of https://github.com/abusimbele/acoustic_swarm.git
 unsigned int reading=0;
 int controllerReadout=-1;
 int counter=0;
@@ -29,11 +33,14 @@ const int WAITING_TIME=1000; //65
 boolean bit_flag=false;
 unsigned long start_time=0.0;
 unsigned long end_time=0.0;
+<<<<<<< HEAD
 
 
 unsigned char MSG_TYPE_SIZE=4;
 unsigned char msg_type=0;
 
+=======
+>>>>>>> branch 'master' of https://github.com/abusimbele/acoustic_swarm.git
 
 
 
@@ -79,8 +86,13 @@ bool start_synchronize(){
 
 		  Wire.requestFrom(113,1);
 		  controllerReadout=Wire.read();
+<<<<<<< HEAD
 //		  Serial.print("ControllerReadoutFirmware_0: ");
 //		  Serial.println(controllerReadout);
+=======
+		  Serial.print("ControllerReadoutFirmware_0: ");
+		  Serial.println(controllerReadout);
+>>>>>>> branch 'master' of https://github.com/abusimbele/acoustic_swarm.git
 		  delay(1);
 
 
@@ -101,10 +113,16 @@ bool start_synchronize(){
 	  	  delay(2);
 
 
+<<<<<<< HEAD
 	  	  //Serial.print("DATA-BIT: ");
 	  	  if(reading!=TIMEOUT){
 	  		  //1 received
 	  		 Serial.println("Possible packet is incoming");
+=======
+	  	  Serial.print("DATA-BIT: ");
+	  	  if(reading!=TIMEOUT){
+	  		 Serial.println("First 1 arrived!");
+>>>>>>> branch 'master' of https://github.com/abusimbele/acoustic_swarm.git
 	  		 return true;
 	  	  }
 	}
@@ -207,9 +225,15 @@ unsigned char receive_bit(){
 	//	  reading = reading << 8;    // shift high byte to be high 8 bits
 	//	  reading |= Wire.read();
 		  reading =(reading * 256) + Wire.read();
+<<<<<<< HEAD
 //		  Serial.print("Seconds: ");
 //		  Serial.println(reading);
+=======
+		  Serial.print("Seconds: ");
+		  Serial.println(reading);
+>>>>>>> branch 'master' of https://github.com/abusimbele/acoustic_swarm.git
 		  delay(2);
+<<<<<<< HEAD
 		  // if(reading!=TIMEOUT and reading<MAX_MEASURE_TIME){
 		  if(reading!=TIMEOUT){
 
@@ -220,10 +244,24 @@ unsigned char receive_bit(){
 			  break;
 		  }
 
+=======
+		  if(reading!=TIMEOUT and reading<MAX_MEASURE_TIME){
+			  bit_flag=true;
+		  }
+		  if((millis()-start_time)>=965.0){
+			  break;
+>>>>>>> branch 'master' of https://github.com/abusimbele/acoustic_swarm.git
+		  }
+
+<<<<<<< HEAD
+
+	  //Serial.print("DATA-BIT: ");
+=======
 		  }
 
 
-	  //Serial.print("DATA-BIT: ");
+	  Serial.print("DATA-BIT: ");
+>>>>>>> branch 'master' of https://github.com/abusimbele/acoustic_swarm.git
 	  if(!bit_flag)
 	  	  {
 		  Serial.print("0");
@@ -232,13 +270,22 @@ unsigned char receive_bit(){
 
 	  	  }
 	  else{
+<<<<<<< HEAD
 		  Serial.print("1");
 		  bit_flag=false;
 		  return 1;
+=======
+		  Serial.println("1");
+>>>>>>> branch 'master' of https://github.com/abusimbele/acoustic_swarm.git
 	  }
 
+<<<<<<< HEAD
 	  //Serial.println("*************");
 
+=======
+	  Serial.println("*************");
+	  bit_flag=false;
+>>>>>>> branch 'master' of https://github.com/abusimbele/acoustic_swarm.git
 
 }
 //void test(){Serial.println("muh!");}
@@ -267,6 +314,10 @@ void setup() {
   Serial.println(" RECEIVING STATE ON ");
   Serial.println("********************************");
   while(!start_synchronize()){}
+<<<<<<< HEAD
+=======
+  //FrequencyTimer2::setOnOverflow(test);
+>>>>>>> branch 'master' of https://github.com/abusimbele/acoustic_swarm.git
   delay(500);
 
 
