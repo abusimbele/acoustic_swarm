@@ -15,7 +15,7 @@
 
 const int ULTRA_TRANS_ADDRESS    =  112;
 const int ULTRA_RECEIV_ADDRESS   =  113;
-const int MAX_MEASURE_TIME=15000;
+const int MAX_MEASURE_TIME=1000000; //15000
 unsigned int reading=0;
 int controllerReadout=-1;
 int counter=0;
@@ -204,7 +204,10 @@ void receive_bit(){
 		  Serial.print("Seconds: ");
 		  Serial.println(reading);
 		  delay(2);
-		  if(reading!=TIMEOUT and reading<MAX_MEASURE_TIME){
+		  // if(reading!=TIMEOUT and reading<MAX_MEASURE_TIME){
+		  if(reading!=TIMEOUT){
+
+			  //Serial.println("MUH");
 			  bit_flag=true;
 		  }
 		  if((millis()-start_time)>=965.0){
