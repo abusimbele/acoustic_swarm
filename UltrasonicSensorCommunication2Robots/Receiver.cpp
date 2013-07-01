@@ -31,6 +31,11 @@ unsigned long start_time=0.0;
 unsigned long end_time=0.0;
 
 
+unsigned char MSG_TYPE_SIZE=4;
+unsigned char msg_type=0;
+
+
+
 
 Message send_bit_sequence(int bits_to_send[]){
 	Message msg(bits_to_send);
@@ -74,8 +79,8 @@ bool start_synchronize(){
 
 		  Wire.requestFrom(113,1);
 		  controllerReadout=Wire.read();
-		  Serial.print("ControllerReadoutFirmware_0: ");
-		  Serial.println(controllerReadout);
+//		  Serial.print("ControllerReadoutFirmware_0: ");
+//		  Serial.println(controllerReadout);
 		  delay(1);
 
 
@@ -96,9 +101,10 @@ bool start_synchronize(){
 	  	  delay(2);
 
 
-	  	  Serial.print("DATA-BIT: ");
+	  	  //Serial.print("DATA-BIT: ");
 	  	  if(reading!=TIMEOUT){
-	  		 Serial.println("First 1 arrived!");
+	  		  //1 received
+	  		 Serial.println("Possible packet is incoming");
 	  		 return true;
 	  	  }
 	}
@@ -147,7 +153,7 @@ void read_firmware(){
 
 
 
-void receive_bit(){
+unsigned char receive_bit(){
 	//Serial.println("muh");
 
 
@@ -201,8 +207,8 @@ void receive_bit(){
 	//	  reading = reading << 8;    // shift high byte to be high 8 bits
 	//	  reading |= Wire.read();
 		  reading =(reading * 256) + Wire.read();
-		  Serial.print("Seconds: ");
-		  Serial.println(reading);
+//		  Serial.print("Seconds: ");
+//		  Serial.println(reading);
 		  delay(2);
 		  // if(reading!=TIMEOUT and reading<MAX_MEASURE_TIME){
 		  if(reading!=TIMEOUT){
@@ -217,18 +223,22 @@ void receive_bit(){
 		  }
 
 
-	  Serial.print("DATA-BIT: ");
+	  //Serial.print("DATA-BIT: ");
 	  if(!bit_flag)
 	  	  {
-		  Serial.println("0");
+		  Serial.print("0");
+		  bit_flag=false;
+		  return 0;
 
 	  	  }
 	  else{
-		  Serial.println("1");
+		  Serial.print("1");
+		  bit_flag=false;
+		  return 1;
 	  }
 
-	  Serial.println("*************");
-	  bit_flag=false;
+	  //Serial.println("*************");
+
 
 }
 //void test(){Serial.println("muh!");}
@@ -239,8 +249,8 @@ void receive_bit(){
 
 
 void setup() {
-  //FrequencyTimer2::setPeriod(30000);
-  //FrequencyTimer2::enable();
+	//Receiving state
+
   (*msg)= send_bit_sequence(msg1_bits);
   Wire.begin();
   Serial.begin(19200);
@@ -253,8 +263,10 @@ void setup() {
 //  Serial.print((*msg).get_bitvalues()[4]);
 //  Serial.println((*msg).get_bitvalues()[5]);
 
+  Serial.println("********************************");
+  Serial.println(" RECEIVING STATE ON ");
+  Serial.println("********************************");
   while(!start_synchronize()){}
-  //FrequencyTimer2::setOnOverflow(test);
   delay(500);
 
 
@@ -263,8 +275,54 @@ void setup() {
 
 
 
+unsigned char look_for_msg_type(){
+	unsigned char msg_type=0;
+		for(unsigned char i=0;i<MSG_TYPE_SIZE;i++){
+			msg_type = msg_type << 1;
+			msg_type = msg_type + receive_bit();
+
+
+		}
+
+		return msg_type;
+}
+
+
 void loop() {
-	receive_bit();
+
+	msg_type=look_for_msg_type();
+	Serial.println();
+	Serial.print("MSG_TYPE: ");
+	Serial.println(msg_type);
+	Serial.println();
+
+	switch(msg_type)
+	{
+	//RTS
+	case 0:
+		break;
+
+	//CTS
+	case 1:
+		break;
+
+	//DATA
+	case 2:
+		break;
+	}
+	  Serial.println("********************************");
+	  Serial.println(" RECEIVING STATE ON ");
+	  Serial.println("********************************");
+	while(!start_synchronize()){}
+	delay(500);
+
+
+
+
+
+
+
+
 
 
 
