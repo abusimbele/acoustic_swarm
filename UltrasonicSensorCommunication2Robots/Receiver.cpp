@@ -30,9 +30,11 @@ boolean bit_flag=false;
 unsigned long start_time=0.0;
 unsigned long end_time=0.0;
 
-
+//DATA, RTS, CTS,...
 unsigned char MSG_TYPE_SIZE=4;
-unsigned char msg_type=0;
+
+//maximal number of individuals in a local network
+unsigned char MAC_Address_SIZE=8;
 
 
 
@@ -273,27 +275,62 @@ void setup() {
 
 }
 
+/**
+ *Reads packet information for "number_of_bits" places.
+ */
+unsigned char receive_bits(unsigned char number_of_bits){
+	unsigned char number=0;
+		for(unsigned char i=0;i<number_of_bits;i++){
+			number = number << 1;
+			number = number + receive_bit();
+		}
+
+		return number;
+
+
+}
 
 
 unsigned char look_for_msg_type(){
-	unsigned char msg_type=0;
-		for(unsigned char i=0;i<MSG_TYPE_SIZE;i++){
-			msg_type = msg_type << 1;
-			msg_type = msg_type + receive_bit();
-
-
-		}
-
-		return msg_type;
+	return receive_bits(MSG_TYPE_SIZE);
 }
 
+unsigned char look_for_MAC_Address(){
+	return receive_bits(MAC_Address_SIZE);
+}
+
+
+
+
+
+
+
+unsigned char msg_type=0;
+unsigned char mac_address_from=0;
+unsigned char mac_address_to=0;
 
 void loop() {
 
 	msg_type=look_for_msg_type();
+
+
 	Serial.println();
 	Serial.print("MSG_TYPE: ");
 	Serial.println(msg_type);
+	Serial.println();
+
+	mac_address_from=look_for_MAC_Address();
+
+	Serial.println();
+	Serial.print("MAC_FROM: ");
+	Serial.println(mac_address_from);
+	Serial.println();
+
+	mac_address_to=look_for_MAC_Address();
+
+	Serial.println();
+	Serial.print("MAC_TO: ");
+	Serial.println(mac_address_to);
 	Serial.println();
 
 	switch(msg_type)
