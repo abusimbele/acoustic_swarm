@@ -1,11 +1,11 @@
 // Do not remove the include below
 #include "Receiver.h"
 #include "Wire.h"
-//#include "TimerOne.h"
 #include "Message.h"
-//#include "FrequencyTimer2.h"
 
 
+
+//#include <boost/dynamic_bitset.hpp>
 
 
 
@@ -30,11 +30,23 @@ boolean bit_flag=false;
 unsigned long start_time=0.0;
 unsigned long end_time=0.0;
 
-//DATA, RTS, CTS,...
+
+//************ HEADER **************
+//DATA, RTS, CTS,...  in bits for bits!!
 unsigned char MSG_TYPE_SIZE=4;
 
-//maximal number of individuals in a local network
+//maximal number of individuals in a local network  in bits for bits!!
 unsigned char MAC_Address_SIZE=8;
+
+//max DATA-size in bits for BYTES!!! (*** be carefully ***)
+unsigned char DATA_SIZE=8;
+
+unsigned char BYTE=8;
+
+
+
+
+//************ HEADER END **************
 
 
 
@@ -295,8 +307,32 @@ unsigned char look_for_msg_type(){
 	return receive_bits(MSG_TYPE_SIZE);
 }
 
-unsigned char look_for_MAC_Address(){
+unsigned char look_for_MAC_address(){
 	return receive_bits(MAC_Address_SIZE);
+}
+
+
+unsigned char look_for_data_length(){
+	return receive_bits(DATA_SIZE);
+}
+
+unsigned char look_for_1_byte_data(){
+	return receive_bits(BYTE);
+
+}
+
+
+ String look_for_data(unsigned char number_bytes){
+	 String data="";
+	 for(unsigned char i=0;i<number_bytes;i++){
+		 data=data+look_for_1_byte_data();
+		 data=data+"_";
+
+	 }
+
+	 return data;
+
+
 }
 
 
@@ -308,6 +344,10 @@ unsigned char look_for_MAC_Address(){
 unsigned char msg_type=0;
 unsigned char mac_address_from=0;
 unsigned char mac_address_to=0;
+unsigned char data_length=0;
+String data="";
+
+
 
 void loop() {
 
@@ -319,19 +359,54 @@ void loop() {
 	Serial.println(msg_type);
 	Serial.println();
 
-	mac_address_from=look_for_MAC_Address();
+	mac_address_from=look_for_MAC_address();
 
 	Serial.println();
 	Serial.print("MAC_FROM: ");
 	Serial.println(mac_address_from);
 	Serial.println();
 
-	mac_address_to=look_for_MAC_Address();
+	mac_address_to=look_for_MAC_address();
 
 	Serial.println();
 	Serial.print("MAC_TO: ");
 	Serial.println(mac_address_to);
 	Serial.println();
+
+	if(msg_type==2){
+
+		data_length=look_for_data_length();
+
+		Serial.println();
+		Serial.print("DATA SIZE: ");
+		Serial.print(data_length);
+		Serial.println(" bytes");
+		Serial.println();
+
+		data= look_for_data(data_length);
+
+
+		Serial.println();
+		Serial.print("DATA: ");
+		Serial.println(data);
+		Serial.println();
+
+
+
+
+
+
+	}
+	else{
+		Serial.println();
+		Serial.print("NO DATA INCLUDED");
+		Serial.println();
+
+	}
+
+
+
+
 
 	switch(msg_type)
 	{
