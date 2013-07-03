@@ -11,8 +11,8 @@
 
 
 
-
-
+boolean last_bit_flag=false;
+boolean echo_off=false;
 const int ULTRA_TRANS_ADDRESS    =  112;
 const int ULTRA_RECEIV_ADDRESS   =  113;
 const int MAX_MEASURE_TIME=1000000; //15000
@@ -25,13 +25,17 @@ int msg_bit=0;
 const unsigned int TIMEOUT=0; //too much 15752;//old 11000
 const int TIMEOUT_2=20000;
 boolean flag=false;
-const int WAITING_TIME=1000; //65
+const unsigned long WAITING_TIME=290; //65 //1000 //285 //282.9999 too fast!! 282.99999 too slow
 boolean bit_flag=false;
 unsigned long start_time=0.0;
 unsigned long end_time=0.0;
 
 
 //************ HEADER **************
+
+//START BITS
+
+unsigned char HEADER_START_BITS_SIZE=1;
 //DATA, RTS, CTS,...  in bits for bits!!
 unsigned char MSG_TYPE_SIZE=4;
 
@@ -119,6 +123,7 @@ bool start_synchronize(){
 	  	  if(reading!=TIMEOUT){
 	  		  //1 received
 	  		 Serial.println("Possible packet is incoming");
+	  		 delay(15);//10
 	  		 return true;
 	  	  }
 	}
@@ -185,17 +190,22 @@ unsigned char receive_bit(){
 			  Wire.beginTransmission(113);
 			  Wire.write(byte(0x00)); // Register 0 -> control register
 			  Wire.endTransmission();
+			  delay(2);
 
 
 
 			  while(controllerReadout==-1)
 				{
+				  delay(2);
+				  if((millis()-start_time)>=WAITING_TIME){ //965
+				 			  break;
+				  }
 
-				  delay(1);
 				  Wire.requestFrom(113,1);
 				  controllerReadout=Wire.read();
 //				  Serial.print("ControllerReadoutFirmware: ");
 //				  Serial.println(controllerReadout);
+
 
 				}
 
@@ -216,7 +226,9 @@ unsigned char receive_bit(){
 		   */
 
 		  Wire.requestFrom(113,2);
+		  delay(2);
 		  reading=Wire.read();
+		  delay(2);
 
 	//	  reading = reading << 8;    // shift high byte to be high 8 bits
 	//	  reading |= Wire.read();
@@ -228,9 +240,27 @@ unsigned char receive_bit(){
 		  if(reading!=TIMEOUT){
 
 			  //Serial.println("MUH");
-			  bit_flag=true;
+			  if(echo_off){
+				  echo_off=false;
+			  }
+			  else{
+				  bit_flag=true;
+
+			  }
+
+			  last_bit_flag=true;
 		  }
-		  if((millis()-start_time)>=965.0){
+		  else{
+			  echo_off=false;
+
+		  }
+		  if((millis()-start_time)>=WAITING_TIME){ //965
+			  if(last_bit_flag){
+				  echo_off=true;
+				  last_bit_flag=false;
+			  }
+
+			  //Serial.println("****************");
 			  break;
 		  }
 
@@ -267,7 +297,7 @@ void start_receiving_mode(){
 	Serial.println(" RECEIVING STATE ON ");
 	Serial.println("********************************");
 	while(!start_synchronize()){}
-	delay(500);
+	//delay(500);
 }
 
 
@@ -277,6 +307,7 @@ void setup() {
   (*msg)= send_bit_sequence(msg1_bits);
   Wire.begin();
   Serial.begin(19200);
+  delay(4);
 //  delay(1000);
 //  Serial.print("Msg: ");
 //  Serial.print((*msg).get_bitvalues()[0]);
@@ -405,10 +436,25 @@ unsigned char mac_address_to=0;
 unsigned char data_length=0;
 String data="";
 boolean parity=false;
+unsigned char header_start=0;
+
+
+unsigned char header_start_bits(){
+	return receive_bits(HEADER_START_BITS_SIZE);
+
+}
 
 
 
 void receive_packet(){
+
+	Serial.println();
+	Serial.print("HEADER START BITS: ");
+	Serial.println("1");
+	Serial.println();
+
+
+
 
 	msg_type=look_for_msg_type();
 
@@ -418,21 +464,21 @@ void receive_packet(){
 	Serial.println(msg_type);
 	Serial.println();
 
-	//PARITY
-	Serial.print("Parity-BIT: ");
-	parity=parity_bit_check(look_for_parity_bit(),msg_type );
-	if(parity){
-		Serial.println();
-		Serial.println("PARITY_CHECK: OK");
-		Serial.println();
-	}
-	else{
-		Serial.println();
-		Serial.println("PARITY_CHECK: ERROR");
-		Serial.println();
-		//WHAT RETURN??????????????
-		return;
-	}
+//	//PARITY
+//	Serial.print("Parity-BIT: ");
+//	parity=parity_bit_check(look_for_parity_bit(),msg_type );
+//	if(parity){
+//		Serial.println();
+//		Serial.println("PARITY_CHECK: OK");
+//		Serial.println();
+//	}
+//	else{
+//		Serial.println();
+//		Serial.println("PARITY_CHECK: ERROR");
+//		Serial.println();
+//		//WHAT RETURN??????????????
+//		return;
+//	}
 
 
 
@@ -445,21 +491,21 @@ void receive_packet(){
 	Serial.println(mac_address_from);
 	Serial.println();
 
-	//PARITY
-	Serial.print("Parity-BIT: ");
-	parity=parity_bit_check(look_for_parity_bit(), mac_address_from);
-	if(parity){
-		Serial.println();
-		Serial.println("PARITY_CHECK: OK");
-		Serial.println();
-	}
-	else{
-		Serial.println();
-		Serial.println("PARITY_CHECK: ERROR");
-		Serial.println();
-		//WHAT RETURN??????????????
-		return;
-	}
+//	//PARITY
+//	Serial.print("Parity-BIT: ");
+//	parity=parity_bit_check(look_for_parity_bit(), mac_address_from);
+//	if(parity){
+//		Serial.println();
+//		Serial.println("PARITY_CHECK: OK");
+//		Serial.println();
+//	}
+//	else{
+//		Serial.println();
+//		Serial.println("PARITY_CHECK: ERROR");
+//		Serial.println();
+//		//WHAT RETURN??????????????
+//		return;
+//	}
 
 	mac_address_to=look_for_MAC_address();
 
@@ -470,21 +516,21 @@ void receive_packet(){
 	Serial.println(mac_address_to);
 	Serial.println();
 
-	//PARITY
-	Serial.print("Parity-BIT: ");
-	parity=parity_bit_check(look_for_parity_bit(), mac_address_to);
-	if(parity){
-		Serial.println();
-		Serial.println("PARITY_CHECK: OK");
-		Serial.println();
-	}
-	else{
-		Serial.println();
-		Serial.println("PARITY_CHECK: ERROR");
-		Serial.println();
-		//WHAT RETURN??????????????
-		return;
-	}
+//	//PARITY
+//	Serial.print("Parity-BIT: ");
+//	parity=parity_bit_check(look_for_parity_bit(), mac_address_to);
+//	if(parity){
+//		Serial.println();
+//		Serial.println("PARITY_CHECK: OK");
+//		Serial.println();
+//	}
+//	else{
+//		Serial.println();
+//		Serial.println("PARITY_CHECK: ERROR");
+//		Serial.println();
+//		//WHAT RETURN??????????????
+//		return;
+//	}
 
 
 
@@ -501,21 +547,21 @@ void receive_packet(){
 		Serial.println();
 
 
-		//PARITY
-		Serial.print("Parity-BIT: ");
-		parity=parity_bit_check(look_for_parity_bit(),data_length);
-		if(parity){
-			Serial.println();
-			Serial.println("PARITY_CHECK: OK");
-			Serial.println();
-		}
-		else{
-			Serial.println();
-			Serial.println("PARITY_CHECK: ERROR");
-			Serial.println();
-			//WHAT RETURN??????????????
-			return;
-		}
+//		//PARITY
+//		Serial.print("Parity-BIT: ");
+//		parity=parity_bit_check(look_for_parity_bit(),data_length);
+//		if(parity){
+//			Serial.println();
+//			Serial.println("PARITY_CHECK: OK");
+//			Serial.println();
+//		}
+//		else{
+//			Serial.println();
+//			Serial.println("PARITY_CHECK: ERROR");
+//			Serial.println();
+//			//WHAT RETURN??????????????
+//			return;
+//		}
 
 
 
