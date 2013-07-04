@@ -25,7 +25,7 @@ int msg_bit=0;
 const unsigned int TIMEOUT=0; //too much 15752;//old 11000
 const int TIMEOUT_2=20000;
 boolean flag=false;
-const unsigned long WAITING_TIME=290; //65 //1000 //285 //282.9999 too fast!! 282.99999 too slow
+const unsigned long WAITING_TIME=293; //65 //1000 //285 //282.9999 too fast!! 282.99999 too slow
 boolean bit_flag=false;
 unsigned long start_time=0.0;
 unsigned long end_time=0.0;
@@ -99,7 +99,7 @@ bool start_synchronize(){
 		  controllerReadout=Wire.read();
 //		  Serial.print("ControllerReadoutFirmware_0: ");
 //		  Serial.println(controllerReadout);
-		  delay(1);
+		  delay(2);
 
 
 		}
@@ -123,7 +123,7 @@ bool start_synchronize(){
 	  	  if(reading!=TIMEOUT){
 	  		  //1 received
 	  		 Serial.println("Possible packet is incoming");
-	  		 delay(15);//10
+	  		 delay(20);//10
 	  		 return true;
 	  	  }
 	}
@@ -260,7 +260,7 @@ unsigned char receive_bit(){
 				  last_bit_flag=false;
 			  }
 
-			  //Serial.println("****************");
+//			  Serial.println("****************");
 			  break;
 		  }
 
