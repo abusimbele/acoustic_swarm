@@ -389,22 +389,22 @@ boolean parity_bit_check(boolean paritybit, unsigned char bits){
 		 data_1_byte=look_for_1_byte_data();
 
 
-//			//PARITY
-//		 	Serial.println();
-//		 	Serial.print("Parity-BIT: ");
-//			parity=parity_bit_check(look_for_parity_bit(),data_1_byte);
-//			if(parity){
-//				Serial.println();
-//				Serial.println("PARITY_CHECK: OK");
-//				Serial.println();
-//			}
-//			else{
-//				Serial.println();
-//				Serial.println("PARITY_CHECK: ERROR");
-//				Serial.println();
-//				//WHAT RETURN??????????????
-//				return "ERROR";
-//			}
+			//PARITY
+		 	Serial.println();
+		 	Serial.print("Parity-BIT: ");
+			parity=parity_bit_check(look_for_parity_bit(),data_1_byte);
+			if(parity){
+				Serial.println();
+				Serial.println("PARITY_CHECK: OK");
+				Serial.println();
+			}
+			else{
+				Serial.println();
+				Serial.println("PARITY_CHECK: ERROR");
+				Serial.println();
+				//WHAT RETURN??????????????
+				return "ERROR";
+			}
 
 
 
@@ -464,21 +464,21 @@ void receive_packet(){
 	Serial.println(msg_type);
 	Serial.println();
 
-//	//PARITY
-//	Serial.print("Parity-BIT: ");
-//	parity=parity_bit_check(look_for_parity_bit(),msg_type );
-//	if(parity){
-//		Serial.println();
-//		Serial.println("PARITY_CHECK: OK");
-//		Serial.println();
-//	}
-//	else{
-//		Serial.println();
-//		Serial.println("PARITY_CHECK: ERROR");
-//		Serial.println();
-//		//WHAT RETURN??????????????
-//		return;
-//	}
+	//PARITY
+	Serial.print("Parity-BIT: ");
+	parity=parity_bit_check(look_for_parity_bit(),msg_type );
+	if(parity){
+		Serial.println();
+		Serial.println("PARITY_CHECK: OK");
+		Serial.println();
+	}
+	else{
+		Serial.println();
+		Serial.println("PARITY_CHECK: ERROR");
+		Serial.println();
+		//WHAT RETURN??????????????
+		return;
+	}
 
 
 
@@ -491,21 +491,21 @@ void receive_packet(){
 	Serial.println(mac_address_from);
 	Serial.println();
 
-//	//PARITY
-//	Serial.print("Parity-BIT: ");
-//	parity=parity_bit_check(look_for_parity_bit(), mac_address_from);
-//	if(parity){
-//		Serial.println();
-//		Serial.println("PARITY_CHECK: OK");
-//		Serial.println();
-//	}
-//	else{
-//		Serial.println();
-//		Serial.println("PARITY_CHECK: ERROR");
-//		Serial.println();
-//		//WHAT RETURN??????????????
-//		return;
-//	}
+	//PARITY
+	Serial.print("Parity-BIT: ");
+	parity=parity_bit_check(look_for_parity_bit(), mac_address_from);
+	if(parity){
+		Serial.println();
+		Serial.println("PARITY_CHECK: OK");
+		Serial.println();
+	}
+	else{
+		Serial.println();
+		Serial.println("PARITY_CHECK: ERROR");
+		Serial.println();
+		//WHAT RETURN??????????????
+		return;
+	}
 
 	mac_address_to=look_for_MAC_address();
 
@@ -516,21 +516,21 @@ void receive_packet(){
 	Serial.println(mac_address_to);
 	Serial.println();
 
-//	//PARITY
-//	Serial.print("Parity-BIT: ");
-//	parity=parity_bit_check(look_for_parity_bit(), mac_address_to);
-//	if(parity){
-//		Serial.println();
-//		Serial.println("PARITY_CHECK: OK");
-//		Serial.println();
-//	}
-//	else{
-//		Serial.println();
-//		Serial.println("PARITY_CHECK: ERROR");
-//		Serial.println();
-//		//WHAT RETURN??????????????
-//		return;
-//	}
+	//PARITY
+	Serial.print("Parity-BIT: ");
+	parity=parity_bit_check(look_for_parity_bit(), mac_address_to);
+	if(parity){
+		Serial.println();
+		Serial.println("PARITY_CHECK: OK");
+		Serial.println();
+	}
+	else{
+		Serial.println();
+		Serial.println("PARITY_CHECK: ERROR");
+		Serial.println();
+		//WHAT RETURN??????????????
+		return;
+	}
 
 
 
@@ -547,21 +547,21 @@ void receive_packet(){
 		Serial.println();
 
 
-//		//PARITY
-//		Serial.print("Parity-BIT: ");
-//		parity=parity_bit_check(look_for_parity_bit(),data_length);
-//		if(parity){
-//			Serial.println();
-//			Serial.println("PARITY_CHECK: OK");
-//			Serial.println();
-//		}
-//		else{
-//			Serial.println();
-//			Serial.println("PARITY_CHECK: ERROR");
-//			Serial.println();
-//			//WHAT RETURN??????????????
-//			return;
-//		}
+		//PARITY
+		Serial.print("Parity-BIT: ");
+		parity=parity_bit_check(look_for_parity_bit(),data_length);
+		if(parity){
+			Serial.println();
+			Serial.println("PARITY_CHECK: OK");
+			Serial.println();
+		}
+		else{
+			Serial.println();
+			Serial.println("PARITY_CHECK: ERROR");
+			Serial.println();
+			//WHAT RETURN??????????????
+			return;
+		}
 
 
 
