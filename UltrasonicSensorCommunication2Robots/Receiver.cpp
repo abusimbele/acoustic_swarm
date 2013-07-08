@@ -15,7 +15,7 @@ boolean last_bit_flag=false;
 boolean echo_off=false;
 const int ULTRA_TRANS_ADDRESS    =  112;
 const int ULTRA_RECEIV_ADDRESS   =  113;
-const int MAX_MEASURE_TIME=1000000; //15000
+const unsigned int MAX_MEASURE_TIME=65279;
 unsigned int reading=0;
 int controllerReadout=-1;
 int counter=0;
@@ -25,7 +25,7 @@ int msg_bit=0;
 const unsigned int TIMEOUT=0; //too much 15752;//old 11000
 const int TIMEOUT_2=20000;
 boolean flag=false;
-const unsigned long WAITING_TIME=293; //65 //1000 //285 //282.9999 too fast!! 282.99999 too slow
+const unsigned long WAITING_TIME=2; //65 //1000 //285 //282.9999 too fast!! 282.99999 too slow  /// 20
 boolean bit_flag=false;
 unsigned long start_time=0.0;
 unsigned long end_time=0.0;
@@ -34,27 +34,28 @@ unsigned long end_time=0.0;
 //************ HEADER **************
 
 //START BITS
-
 unsigned char HEADER_START_BITS_SIZE=1;
+
 //DATA, RTS, CTS,...  in bits for bits!!
 unsigned char MSG_TYPE_SIZE=4;
 
-//maximal number of individuals in a local network  in bits for bits!!
+//Maximal number of individuals in a local network  in bits for bits!!
 unsigned char MAC_Address_SIZE=8;
 
-//max DATA-size in bits for BYTES!!! (*** be carefully ***)
+//Max DATA-size in bits for BYTES!!! (*** be carefully ***)
 unsigned char DATA_SIZE=8;
 
+//Number of Bits in one Byte
 unsigned char BYTE=8;
-
-
 
 
 //************ HEADER END **************
 
 
 
-
+/**
+ * Creates a message object with the intended information for transmission.
+ */
 Message send_bit_sequence(int bits_to_send[]){
 	Message msg(bits_to_send);
 	return msg;
@@ -63,29 +64,35 @@ Message send_bit_sequence(int bits_to_send[]){
 }
 
 
-
+/**
+ * Sets the board in a mode to get transmission packets.
+ */
 void activate_receiving_mode(){
 
-	/*
-		   *Activate receiver to listen to the channel
-		   */
+		 /*
+		  *Activate receiver to listen to the channel
+	      */
 
-		  Wire.beginTransmission(113);
-		  Wire.write(byte(0x00)); // Register 0 -> control register
-		  Wire.write(byte(0x58)); // look
+		  Wire.beginTransmission(113); //I2C ID
+		  Wire.write(byte(0x00)); // Set pointer to -> register 0 -> control register
+		  Wire.write(byte(0x58)); // operation -> look for 40k signal
 		  Wire.endTransmission();
 		  //delay(2);
 }
 
 
 
+/**
+ * Look for a 40k signal and return after first seen a 1.
+ */
+
 bool start_synchronize(){
       while(true){
 	  controllerReadout=-1;
 	  activate_receiving_mode();
 
-	  Wire.beginTransmission(113);
-	  Wire.write(byte(0x00)); // Register 0 -> control register
+	  Wire.beginTransmission(113);// I2C ID
+	  Wire.write(byte(0x00)); // Set pointer to -> register 0 -> control register
 	  Wire.endTransmission();
 	  delay(2);
 
@@ -94,8 +101,8 @@ bool start_synchronize(){
 	  while(controllerReadout==-1)
 		{
 
-
-		  Wire.requestFrom(113,1);
+		  //Wire.requestFrom(113,1) returns -1, if a measurement is still in progress. Otherwise a number is returned and the loop will break.
+		  Wire.requestFrom(113,1); //I2C ID 113; register 1
 		  controllerReadout=Wire.read();
 //		  Serial.print("ControllerReadoutFirmware_0: ");
 //		  Serial.println(controllerReadout);
@@ -104,26 +111,31 @@ bool start_synchronize(){
 
 		}
 
-	  Wire.beginTransmission(113); // transmit to device #112
-	  Wire.write(byte(0x02));      // sets register pointer to echo #1 register (0x02)
-	  Wire.endTransmission();      // stop transmitting
+	  //Register Pointer to 0x02
+	  Wire.beginTransmission(113); // I2C ID 113
+	  Wire.write(byte(0x02));      // Set pointer to -> echo #1 register (0x02)
+	  Wire.endTransmission();
 	  delay(2);
 
+
+	  //Readout low and high bit of register 0x02
 	  Wire.requestFrom(113,2);
 	  	  reading=Wire.read();
 		  reading =(reading * 256) + Wire.read();
 //	  	  reading = reading << 8;    // shift high byte to be high 8 bits
 //	  	  reading |= Wire.read();
-//	  	  Serial.print("Seconds: ");
+//	  	  Serial.print("Seconds1: ");
 //	  	  Serial.println(reading);
 	  	  delay(2);
 
 
 	  	  //Serial.print("DATA-BIT: ");
-	  	  if(reading!=TIMEOUT){
+	  	  if(reading!=TIMEOUT ){
 	  		  //1 received
 	  		 Serial.println("Possible packet is incoming");
-	  		 delay(20);//10
+
+	  		 //This delay is important to eliminate further 40k signals from one measurement process.
+	  		 delay(12);//20
 	  		 return true;
 	  	  }
 	}
@@ -132,156 +144,109 @@ bool start_synchronize(){
 }
 
 
-void send_bit_0(){
-	//do nothing
-}
-
-void send_bit_1(){
-
-	  /*
-	   *	Send 8 Impulses
-	   */
-
-
-	  Serial.println("PING");
-	  delay(5);
-	  Wire.beginTransmission(112);
-	  Wire.write(byte(0x00)); // Register 0 -> control register
-	  Wire.write(byte(0x5C)); // Erzeugt einen 8 zyklischen 40khz Impuls/Ton
-	  Wire.endTransmission();
-
-	  delay(2);
-
-
-}
-
-
+/**
+ * Read out the firmware information of the SRF02
+ */
 void read_firmware(){
-	  Wire.beginTransmission(113);
-	  Wire.write(byte(0x00)); // Register 0 -> control register
+	  Wire.beginTransmission(113); //IC2 ID 113
+	  Wire.write(byte(0x00)); // Set pointer to -> register 0 -> control register
 	  Wire.endTransmission();
 	  delay(2);
 
-	  Wire.requestFrom(113,1);
+	  Wire.requestFrom(113,1); //Readout 1 byte from register, that was before chosen.
 	  controllerReadout=Wire.read();
 //	  Serial.print("ControllerReadoutFirmware0: ");
 //	  Serial.println(controllerReadout);
 	  controllerReadout=-1;
+	  delay(2);
 }
 
 
 
-
+/**
+ * Returns 1 bit of a transmission.
+ */
 unsigned char receive_bit(){
-	//Serial.println("muh");
+
+	//save start-time for synchronization of receiving bit intervals.
+	//start_time=millis();
+
+	//Go into receiving mode
+	activate_receiving_mode();
 
 
-	  /*
-	   *	Received Impulses
+	/*
+	*  Pointer to Register 0x02
+	*/
+
+	delay(68);
+	Wire.beginTransmission(113); // transmit to device #112
+	Wire.write(byte(0x02));      //Set pointer to -> register (0x02)
+	Wire.endTransmission();
+
+
+
+	/*
+	* Read low and high bit from register (0x02)
+	*/
+
+	Wire.requestFrom(113,2);
+	reading=Wire.read();
+	reading =(reading * 256) + Wire.read();
+
+	/**
+	* +++++++++++++START DEBUGGING+++++++++++++
+	*/
+	//
+	//			  Serial.print("Seconds: ");
+	//			  Serial.println(reading);
+
+	/**
+	* ++++++++++++++END DEBUGGING++++++++++++++
+	*/
+
+	delay(2);
+	//Serial.println(reading);
+	if(reading<MAX_MEASURE_TIME && reading!=0 ){
+		Serial.print("1");
+		return 1;
+	}
+		else{
+			return 0;
+			Serial.print("0");
+		}
+
+
+
+
+
+
+
+//	  //Serial.print("DATA-BIT: ");
+//	  if(!bit_flag)
+//	  	  {
+//		  Serial.print("0");
+//		  bit_flag=false;
+//		  return 0;
+//
+//	  	  }
+//	  else{
+//		  Serial.print("1");
+//		  bit_flag=false;
+//		  return 1;
+//	  }
+
+
+	  /**
+	   * +++++++++++++START DEBUGGING+++++++++++++
 	   */
-	start_time=millis();
 
-		  while(true){
+//	  Serial.println("*************");
 
-			  controllerReadout=-1;
-			  activate_receiving_mode();
+	  /**
+	   * ++++++++++++++END DEBUGGING++++++++++++++
+	   */
 
-
-			  Wire.beginTransmission(113);
-			  Wire.write(byte(0x00)); // Register 0 -> control register
-			  Wire.endTransmission();
-			  delay(2);
-
-
-
-			  while(controllerReadout==-1)
-				{
-				  delay(2);
-				  if((millis()-start_time)>=WAITING_TIME){ //965
-				 			  break;
-				  }
-
-				  Wire.requestFrom(113,1);
-				  controllerReadout=Wire.read();
-//				  Serial.print("ControllerReadoutFirmware: ");
-//				  Serial.println(controllerReadout);
-
-
-				}
-
-
-
-			  /*
-			   *  Pointer to Register 0x02
-			   */
-
-			  Wire.beginTransmission(113); // transmit to device #112
-			  Wire.write(byte(0x02));      // sets register pointer to echo #1 register (0x02)
-			  Wire.endTransmission();      // stop transmitting
-			  delay(2);
-
-
-		  /*
-		   * Read values
-		   */
-
-		  Wire.requestFrom(113,2);
-		  delay(2);
-		  reading=Wire.read();
-		  delay(2);
-
-	//	  reading = reading << 8;    // shift high byte to be high 8 bits
-	//	  reading |= Wire.read();
-		  reading =(reading * 256) + Wire.read();
-//		  Serial.print("Seconds: ");
-//		  Serial.println(reading);
-		  delay(2);
-		  // if(reading!=TIMEOUT and reading<MAX_MEASURE_TIME){
-		  if(reading!=TIMEOUT){
-
-			  //Serial.println("MUH");
-			  if(echo_off){
-				  echo_off=false;
-			  }
-			  else{
-				  bit_flag=true;
-
-			  }
-
-			  last_bit_flag=true;
-		  }
-		  else{
-			  echo_off=false;
-
-		  }
-		  if((millis()-start_time)>=WAITING_TIME){ //965
-			  if(last_bit_flag){
-				  echo_off=true;
-				  last_bit_flag=false;
-			  }
-
-//			  Serial.println("****************");
-			  break;
-		  }
-
-		  }
-
-
-	  //Serial.print("DATA-BIT: ");
-	  if(!bit_flag)
-	  	  {
-		  Serial.print("0");
-		  bit_flag=false;
-		  return 0;
-
-	  	  }
-	  else{
-		  Serial.print("1");
-		  bit_flag=false;
-		  return 1;
-	  }
-
-	  //Serial.println("*************");
 
 
 }
@@ -375,8 +340,6 @@ boolean parity_bit_check(boolean paritybit, unsigned char bits){
 	}
 
 }
-
-
 
 
 
